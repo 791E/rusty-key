@@ -4,8 +4,7 @@
 use esp_backtrace as _;
 use esp_hal::{
     clock::CpuClock,
-    delay::Delay,
-    gpio::{Level, Output, OutputConfig},
+    gpio::{Level, Output, OutputConfig, Input, InputConfig},
     main,
 };
 
@@ -13,12 +12,15 @@ use esp_hal::{
 fn main() -> ! {
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
-    let delay = Delay::new();
 
-    let mut led = Output::new(peripherals.GPIO7, Level::Low, OutputConfig::default());
+    let mut led = Output::new(peripherals.GPIO10, Level::Low, OutputConfig::default());
+    let button = Input::new(peripherals.GPIO0, InputConfig::default());
 
     loop {
-        led.toggle();
-        delay.delay_millis(1000);
+        if button.is_high() {
+            led.set_high();
+        } else {
+            led.set_low();
+        }
     }
 }
