@@ -2,25 +2,25 @@
 #![no_main]
 
 use esp_backtrace as _;
-use esp_hal::clock::CpuClock;
-use esp_hal::main;
-use esp_hal::time::{Duration, Instant};
-use log::info;
+use esp_hal::{
+    clock::CpuClock,
+    gpio::{Level, Output, OutputConfig, Input, InputConfig},
+    main,
+};
 
 #[main]
 fn main() -> ! {
-    // generator version: 0.3.1
-
-    esp_println::logger::init_logger_from_env();
-
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
-    let _peripherals = esp_hal::init(config);
+    let peripherals = esp_hal::init(config);
+
+    let mut led = Output::new(peripherals.GPIO10, Level::Low, OutputConfig::default());
+    let button = Input::new(peripherals.GPIO0, InputConfig::default());
 
     loop {
-        info!("Hello world!");
-        let delay_start = Instant::now();
-        while delay_start.elapsed() < Duration::from_millis(500) {}
+        if button.is_high() {
+            led.set_high();
+        } else {
+            led.set_low();
+        }
     }
-
-    // for inspiration have a look at the examples at https://github.com/esp-rs/esp-hal/tree/esp-hal-v1.0.0-beta.0/examples/src/bin
 }
